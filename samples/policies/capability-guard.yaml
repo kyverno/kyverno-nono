@@ -1,0 +1,24 @@
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: nono-workspace-capabilities
+spec:
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ["*"]
+        apiVersions: ["*"]
+        operations: ["CREATE", "UPDATE", "DELETE", "CONNECT"]
+        resources: ["*"]
+  evaluation:
+    mode: Nono
+  failurePolicy: Fail
+  matchConditions:
+    - name: filesystem-capability
+      expression: object.request.capability_type == "capability"
+  validations:
+    - expression: >-
+        object.request.path.startsWith("/workspace/") &&
+        object.request.access == "Read"
+        ? nono.Grant().Response()
+        : nono.Deny("only read access within /workspace is allowed").Response()
+      message: "filesystem capability is outside the read-only workspace"

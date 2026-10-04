@@ -1,0 +1,12 @@
+{
+  "backend": "kyverno",
+  "request": {
+    "capability_type": "capability",
+    "request_id": "req-capability-write",
+    "session_id": "demo-session",
+    "child_pid": 2346,
+    "path": "/workspace/src/main.go",
+    "access": "Write",
+    "reason": "modify source"
+  }
+}

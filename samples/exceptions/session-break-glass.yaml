@@ -1,0 +1,14 @@
+apiVersion: policies.kyverno.io/v1alpha1
+kind: PolicyException
+metadata:
+  name: nono-break-glass-session
+  namespace: kyverno
+spec:
+  policyRefs:
+    - kind: ValidatingPolicy
+      name: nono-kubectl-readonly
+  matchConditions:
+    - name: approved-session
+      expression: object.request.session_id == "approved-break-glass-session"
+  evaluationMode: Nono
+  reportResult: skip

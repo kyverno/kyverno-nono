@@ -1,0 +1,14 @@
+{
+  "backend": "kyverno",
+  "request": {
+    "capability_type": "command",
+    "request_id": "req-command-break-glass",
+    "session_id": "approved-break-glass-session",
+    "child_pid": 1237,
+    "command": "kubectl",
+    "caller": "claude",
+    "args": ["kubectl", "delete", "namespace", "production"],
+    "intercept_rule": "kubectl",
+    "reason": "approved emergency maintenance"
+  }
+}

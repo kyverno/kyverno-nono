@@ -1,0 +1,13 @@
+{
+  "backend": "kyverno",
+  "request": {
+    "capability_type": "command",
+    "request_id": "req-command-untrusted-caller",
+    "session_id": "demo-session",
+    "child_pid": 1236,
+    "command": "kubectl",
+    "caller": "untrusted-script",
+    "args": ["kubectl", "get", "pods"],
+    "intercept_rule": "kubectl"
+  }
+}

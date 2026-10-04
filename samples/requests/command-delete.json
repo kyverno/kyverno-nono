@@ -1,0 +1,14 @@
+{
+  "backend": "kyverno",
+  "request": {
+    "capability_type": "command",
+    "request_id": "req-command-delete",
+    "session_id": "demo-session",
+    "child_pid": 1235,
+    "command": "kubectl",
+    "caller": "claude",
+    "args": ["kubectl", "delete", "namespace", "production"],
+    "intercept_rule": "kubectl",
+    "reason": "remove a namespace"
+  }
+}

@@ -1,0 +1,25 @@
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: nono-network-allowlist
+spec:
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ["*"]
+        apiVersions: ["*"]
+        operations: ["CREATE", "UPDATE", "DELETE", "CONNECT"]
+        resources: ["*"]
+  evaluation:
+    mode: Nono
+  failurePolicy: Fail
+  matchConditions:
+    - name: network-request
+      expression: object.request.capability_type == "network"
+  validations:
+    - expression: >-
+        object.request.host == "api.example.com" &&
+        object.request.port == 443 &&
+        object.request.protocol == "tcp"
+        ? nono.Grant().Response()
+        : nono.Deny("only TCP connections to api.example.com:443 are allowed").Response()
+      message: "network destination is not allowlisted"

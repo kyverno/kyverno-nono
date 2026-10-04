@@ -1,0 +1,14 @@
+{
+  "backend": "kyverno",
+  "request": {
+    "capability_type": "command",
+    "request_id": "req-command-delete-with-get",
+    "session_id": "demo-session",
+    "child_pid": 1238,
+    "command": "kubectl",
+    "caller": "claude",
+    "args": ["kubectl", "delete", "pods", "get"],
+    "intercept_rule": "kubectl",
+    "reason": "attempt to include a read-only verb after a mutation"
+  }
+}

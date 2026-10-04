@@ -1,0 +1,38 @@
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: nono-kubectl-readonly
+spec:
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ["*"]
+        apiVersions: ["*"]
+        operations: ["CREATE", "UPDATE", "DELETE", "CONNECT"]
+        resources: ["*"]
+  evaluation:
+    mode: Nono
+  failurePolicy: Fail
+  matchConditions:
+    - name: kubectl-command
+      expression: >-
+        object.request.capability_type == "command" &&
+        object.request.command == "kubectl"
+  variables:
+    - name: trustedCallers
+      expression: "['claude', 'gemini']"
+    - name: readOnlyVerbs
+      expression: "['get', 'list', 'describe', 'logs', 'top', 'explain', 'version']"
+    - name: argv
+      expression: object.request.argv()
+  validations:
+    - expression: >-
+        variables.trustedCallers.exists(
+          caller, caller == object.request.caller
+        ) &&
+        variables.argv.size() > 0 &&
+        variables.readOnlyVerbs.exists(
+          verb, variables.argv[0] == verb
+        )
+        ? nono.Grant().Response()
+        : nono.Deny("caller or kubectl subcommand is not allowed").Response()
+      message: "untrusted callers and kubectl write operations are not allowed"

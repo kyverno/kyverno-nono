@@ -1,0 +1,33 @@
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: nono-endpoint-allowlist
+spec:
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ["*"]
+        apiVersions: ["*"]
+        operations: ["CREATE", "UPDATE", "DELETE", "CONNECT"]
+        resources: ["*"]
+  evaluation:
+    mode: Nono
+  failurePolicy: Fail
+  matchConditions:
+    - name: endpoint-request
+      expression: object.request.capability_type == "endpoint"
+  variables:
+    - name: allowedUpstreams
+      expression: "['https://kube-apiserver:6443', 'https://api.example.internal']"
+    - name: readOnlyMethods
+      expression: "['GET', 'HEAD', 'OPTIONS']"
+  validations:
+    - expression: >-
+        variables.allowedUpstreams.exists(
+        upstream, object.request.upstream == upstream
+        ) &&
+        variables.readOnlyMethods.exists(
+          method, method == object.request.method
+        )
+        ? nono.Grant().Response()
+        : nono.Deny("endpoint upstream or method is not allowed").Response()
+      message: "endpoint request is outside the configured allowlist"

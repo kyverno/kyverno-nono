@@ -1,0 +1,14 @@
+{
+  "backend": "kyverno",
+  "request": {
+    "capability_type": "command",
+    "request_id": "req-command-get",
+    "session_id": "demo-session",
+    "child_pid": 1234,
+    "command": "kubectl",
+    "caller": "claude",
+    "args": ["kubectl", "get", "pods", "-n", "default"],
+    "intercept_rule": "kubectl",
+    "reason": "inspect workloads"
+  }
+}

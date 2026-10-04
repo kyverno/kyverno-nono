@@ -1,0 +1,14 @@
+{
+  "backend": "kyverno",
+  "request": {
+    "capability_type": "endpoint",
+    "request_id": "req-endpoint-prefix-host",
+    "session_id": "demo-session",
+    "child_pid": 0,
+    "route_id": "api",
+    "upstream": "https://api.example.internal.attacker.invalid",
+    "method": "GET",
+    "path": "/api/v1/pods",
+    "rule_label": "endpoint_policy.approve[GET /api/**]"
+  }
+}

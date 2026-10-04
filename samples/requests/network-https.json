@@ -1,0 +1,14 @@
+{
+  "backend": "kyverno",
+  "request": {
+    "capability_type": "network",
+    "request_id": "req-network-https",
+    "session_id": "demo-session",
+    "child_pid": 3456,
+    "host": "api.example.com",
+    "port": 443,
+    "protocol": "tcp",
+    "resolved_ips": ["192.0.2.10"],
+    "reason": "fetch package metadata"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "backend": "kyverno",
+  "request": {
+    "capability_type": "endpoint",
+    "request_id": "req-endpoint-get",
+    "session_id": "demo-session",
+    "child_pid": 0,
+    "route_id": "kubernetes-api",
+    "upstream": "https://kube-apiserver:6443",
+    "method": "GET",
+    "path": "/api/v1/namespaces/default/pods",
+    "rule_label": "endpoint_policy.approve[GET /api/**]"
+  }
+}

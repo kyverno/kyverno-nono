@@ -1,0 +1,4 @@
+/cmd/kyverno-nono/kyverno-nono
+/coverage.out
+*.test
+.DS_Store

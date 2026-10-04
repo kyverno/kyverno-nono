@@ -1,0 +1,13 @@
+{
+  "backend": "kyverno",
+  "request": {
+    "capability_type": "network",
+    "request_id": "req-network-denied",
+    "session_id": "demo-session",
+    "child_pid": 3457,
+    "host": "untrusted.example.net",
+    "port": 443,
+    "protocol": "tcp",
+    "resolved_ips": ["192.0.2.20"]
+  }
+}

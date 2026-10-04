@@ -1,0 +1,12 @@
+{
+  "backend": "kyverno",
+  "request": {
+    "capability_type": "capability",
+    "request_id": "req-capability-read",
+    "session_id": "demo-session",
+    "child_pid": 2345,
+    "path": "/workspace/src/main.go",
+    "access": "Read",
+    "reason": "review source"
+  }
+}

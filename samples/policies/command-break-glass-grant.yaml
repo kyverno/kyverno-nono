@@ -1,0 +1,22 @@
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: nono-break-glass-approval
+spec:
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ["*"]
+        apiVersions: ["*"]
+        operations: ["CREATE", "UPDATE", "DELETE", "CONNECT"]
+        resources: ["*"]
+  evaluation:
+    mode: Nono
+  failurePolicy: Fail
+  matchConditions:
+    - name: approved-break-glass-session
+      expression: >-
+        object.request.capability_type == "command" &&
+        object.request.session_id == "approved-break-glass-session"
+  validations:
+    - expression: nono.Grant().Response()
+      message: "request is from the explicitly approved break-glass session"
