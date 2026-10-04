@@ -1,0 +1,33 @@
+{{- if .Values.kubePolicySource.enabled }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "kyverno-nono.fullname" . }}
+  labels:
+    {{- include "kyverno-nono.labels" . | nindent 4 }}
+rules:
+  - apiGroups:
+      - policies.kyverno.io
+    resources:
+      - validatingpolicies
+      - policyexceptions
+    verbs:
+      - get
+      - list
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "kyverno-nono.fullname" . }}
+  labels:
+    {{- include "kyverno-nono.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "kyverno-nono.fullname" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "kyverno-nono.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+{{- end }}

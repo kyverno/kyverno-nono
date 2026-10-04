@@ -1,0 +1,6 @@
+apiVersion: v2
+name: kyverno-nono
+description: Kyverno CEL-based approval webhook for nono agent sandboxes
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

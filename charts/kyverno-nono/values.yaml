@@ -1,0 +1,45 @@
+replicaCount: 1
+
+image:
+  repository: ghcr.io/kyverno/kyverno-nono
+  tag: ""
+  pullPolicy: IfNotPresent
+  pullSecrets: []
+
+nameOverride: ""
+fullnameOverride: ""
+commonLabels: {}
+
+serviceAccount:
+  create: true
+  name: ""
+  automount: true
+
+kubePolicySource:
+  enabled: true
+
+service:
+  type: ClusterIP
+  port: 8765
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: "1"
+    memory: 512Mi
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 65532
+  runAsGroup: 65532
+  seccompProfile:
+    type: RuntimeDefault
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL

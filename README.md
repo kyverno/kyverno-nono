@@ -20,6 +20,7 @@
   - [All request payloads](samples/requests/)
 - [Configuring nono](docs/README.md#configuring-nono)
 - [Deployment](docs/README.md#deployment)
+- [Install in Kind with Helm](#install-in-kind-with-helm)
 - [Architecture](docs/README.md#architecture)
 
 ## Build and test
@@ -38,6 +39,37 @@ docker build -t kyverno-nono:dev .
 ```
 
 The multi-stage build compiles a static Go binary and copies only that binary into the Distroless runtime image.
+
+## Helm chart
+
+The Helm chart is in [`charts/kyverno-nono`](charts/kyverno-nono). CI validates it on pull requests and publishes OCI charts to `ghcr.io/kyverno/charts/kyverno-nono` for pushes to `main` and version tags. The container is published to `ghcr.io/kyverno/kyverno-nono`.
+
+## Install in Kind with Helm
+
+Create a cluster if needed, and install Kyverno first so the policy CRDs and admission components are available:
+
+```sh
+kind get clusters | grep -qx kyverno || kind create cluster --name kyverno
+helm repo add kyverno https://kyverno.github.io/kyverno/ --force-update
+helm repo update
+helm upgrade --install kyverno kyverno/kyverno \
+  --namespace kyverno --create-namespace --wait --timeout 5m
+```
+
+Build and load the local image, then install the chart with that image override:
+
+```sh
+docker build -t kyverno-nono:dev .
+kind load docker-image kyverno-nono:dev --name kyverno
+helm upgrade --install kyverno-nono charts/kyverno-nono \
+  --namespace kyverno --create-namespace \
+  --set image.repository=kyverno-nono \
+  --set image.tag=dev \
+  --set commonLabels.team=kyverno
+kubectl -n kyverno rollout status deployment/kyverno-nono
+```
+
+The Service is available inside the cluster at `http://kyverno-nono.kyverno.svc:8765/approve`. To install a published release instead of building locally, use `helm upgrade --install kyverno-nono oci://ghcr.io/kyverno/charts/kyverno-nono --version <chart-version> --namespace kyverno --create-namespace`; use the corresponding published image tag or override `image.repository` and `image.tag`. If the chart image is pulled from a private registry, configure `image.pullSecrets`.
 
 ## Run
 
@@ -77,7 +109,7 @@ Set command invocation or endpoint policy actions to `approve` to route selected
 
 The [samples directory](samples/README.md) contains standalone policies and request payloads for each nono approval capability. Apply the `ValidatingPolicy` samples to a cluster watched by kyverno-nono, or load their directory as an external policy source.
 
-The [Kubernetes deployment sample](samples/deployment/kyverno-nono.yaml) includes the ServiceAccount, read-only RBAC for `ValidatingPolicy` and `PolicyException`, a hardened Deployment, and a ClusterIP Service. Build and load the image into Kind, then apply it:
+The [Kubernetes deployment manifest sample](samples/deployment/kyverno-nono.yaml) includes the ServiceAccount, read-only RBAC for `ValidatingPolicy` and `PolicyException`, a hardened Deployment, and a ClusterIP Service. The Helm chart provides the same resources with configurable values.
 
 ```sh
 docker build -t kyverno-nono:dev .

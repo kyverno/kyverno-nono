@@ -520,16 +520,34 @@ Use the webhook backend and command-policy configuration above to route nono's `
 
 ### Kubernetes deployment (in-cluster)
 
-Build the static Distroless image, load it into Kind, and apply the sample manifest. The manifest includes a ServiceAccount with read-only access to `ValidatingPolicy` and `PolicyException`, plus a non-root Deployment with a read-only filesystem, dropped capabilities, resource limits, health probes, and a ClusterIP Service:
+For a local Kind installation, create the cluster (if needed), install Kyverno, build/load the container image, then install the chart:
 
 ```bash
+kind get clusters | grep -qx kyverno || kind create cluster --name kyverno
+helm repo add kyverno https://kyverno.github.io/kyverno/ --force-update
+helm repo update
+helm upgrade --install kyverno kyverno/kyverno \
+  --namespace kyverno --create-namespace --wait --timeout 5m
 docker build -t kyverno-nono:dev .
 kind load docker-image kyverno-nono:dev --name kyverno
-kubectl apply -f samples/deployment/kyverno-nono.yaml
+helm upgrade --install kyverno-nono charts/kyverno-nono \
+  --namespace kyverno --create-namespace \
+  --set image.repository=kyverno-nono \
+  --set image.tag=dev \
+  --set commonLabels.team=kyverno
 kubectl -n kyverno rollout status deployment/kyverno-nono
 ```
 
-The example targets the `kyverno` namespace and the local image tag `kyverno-nono:dev`; update these values for your cluster and registry. For non-Kind clusters, publish the image to a registry accessible by the cluster before applying the manifest. The Service exposes the approval endpoint at `http://kyverno-nono.kyverno.svc:8765/approve`. Applying `ValidatingPolicy` samples as Kubernetes resources also requires a Kyverno installation whose admission webhook supports Nono evaluation and CEL functions; on older installations, provide the policy directory as an external source instead.
+The chart is in [`charts/kyverno-nono`](../charts/kyverno-nono) and includes a ServiceAccount with read-only access to `ValidatingPolicy` and `PolicyException`, plus a non-root Deployment with a read-only filesystem, dropped capabilities, resource limits, health probes, and a ClusterIP Service. The example targets the `kyverno` namespace and local image tag `kyverno-nono:dev`; change these values as needed. `commonLabels.team=kyverno` satisfies clusters that enforce a `team` label; replace or omit it to match your cluster's label policy. The Service endpoint is `http://kyverno-nono.kyverno.svc:8765/approve`. For non-Kind clusters, publish the image to a registry accessible by the cluster. Applying `ValidatingPolicy` samples as Kubernetes resources also requires a Kyverno installation whose admission webhook supports Nono evaluation and CEL functions; on older installations, provide the policy directory as an external source instead.
+
+Published charts are available as OCI artifacts at `oci://ghcr.io/kyverno/charts/kyverno-nono`. Install a specific published version with:
+
+```bash
+helm upgrade --install kyverno-nono \
+  oci://ghcr.io/kyverno/charts/kyverno-nono \
+  --version <chart-version> \
+  --namespace kyverno --create-namespace
+```
 
 Apply policies by creating `ValidatingPolicy` resources with `evaluation.mode: Nono` in the cluster — the server watches and hot-reloads them automatically.
 

@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "kyverno-nono.fullname" . }}
+  labels:
+    {{- include "kyverno-nono.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "kyverno-nono.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        {{- include "kyverno-nono.labels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "kyverno-nono.serviceAccountName" . }}
+      automountServiceAccountToken: {{ and .Values.serviceAccount.automount .Values.kubePolicySource.enabled }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- with .Values.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: kyverno-nono
+          image: {{ include "kyverno-nono.image" . | quote }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - serve
+            - --address=:8765
+            - --probes-address=:8080
+            - --metrics-address=127.0.0.1:9082
+            - --kube-policy-source={{ .Values.kubePolicySource.enabled }}
+          ports:
+            - name: approval
+              containerPort: 8765
+              protocol: TCP
+            - name: probes
+              containerPort: 8080
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /livez
+              port: probes
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: probes
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          securityContext:
+            {{- toYaml .Values.containerSecurityContext | nindent 12 }}

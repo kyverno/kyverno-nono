@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "kyverno-nono.fullname" . }}
+  labels:
+    {{- include "kyverno-nono.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    app.kubernetes.io/name: {{ include "kyverno-nono.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  ports:
+    - name: approval
+      port: {{ .Values.service.port }}
+      targetPort: approval
+      protocol: TCP
